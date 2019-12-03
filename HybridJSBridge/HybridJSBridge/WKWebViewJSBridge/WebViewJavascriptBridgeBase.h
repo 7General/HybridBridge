@@ -39,6 +39,8 @@ typedef NSDictionary WVJBMessage;
 - (void)injectJavascriptFile:(NSURL *)url;
 - (void)logUnkownMessage:(NSURL*)url;
 
+- (void)reset;
+
 - (void)flushMessageQueue:(NSString *)messageQueueString;
 - (NSString *)webViewJavascriptFetchQueyCommand;
 

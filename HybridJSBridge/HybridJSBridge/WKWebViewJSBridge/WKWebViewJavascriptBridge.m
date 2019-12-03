@@ -23,12 +23,23 @@
 + (instancetype)bridgeForWebView:(WKWebView*)webView {
     WKWebViewJavascriptBridge * bridge = [[self alloc] init];
     [bridge setupInstance:webView];
-    
+    [bridge reset];
     return bridge;
 }
 
 + (void)enableLogging {
     [WebViewJavascriptBridgeBase enableLogging];
+}
+
+- (void)reset {
+    [_base reset];
+}
+
+- (void)dealloc {
+    _base = nil;
+    _webView = nil;
+    _webViewDelegate = nil;
+    _webView.navigationDelegate = nil;
 }
 
 - (void)setupInstance:(WKWebView *)webView {
@@ -87,11 +98,12 @@
 
 
 - (void)WKFlushMessageQueue {
+    __weak typeof(self) weakSelf = self;
     [_webView evaluateJavaScript:[_base webViewJavascriptFetchQueyCommand] completionHandler:^(NSString* result, NSError* error) {
         if (error != nil) {
             NSLog(@"WebViewJavascriptBridge: WARNING: Error when trying to fetch data from WKWebView: %@", error);
         }
-        [_base flushMessageQueue:result];
+        [weakSelf.base flushMessageQueue:result];
     }];
 }
 

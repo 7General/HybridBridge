@@ -83,6 +83,12 @@ static int logMaxLength = 500;
     }
 }
 
+- (void)reset {
+    self.startupMessageQueue = [NSMutableArray array];
+    self.responseCallbacks = [NSMutableDictionary dictionary];
+    __uniqueId = 0;
+}
+
 - (void)flushMessageQueue:(NSString *)messageQueueStrin {
     if (messageQueueStrin == nil || messageQueueStrin.length == 0) {
         return;

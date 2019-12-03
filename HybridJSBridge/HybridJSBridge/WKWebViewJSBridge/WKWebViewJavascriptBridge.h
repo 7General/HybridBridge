@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)callHandler:(NSString*)handlerName data:(id)data;
 - (void)callHandler:(NSString*)handlerName data:(id)data responseCallback:(WVJBResponseCallback)responseCallback;
 
-
+- (void)reset;
 - (void)setWebViewDelegate:(id)webViewDelegate;
 
 @end
