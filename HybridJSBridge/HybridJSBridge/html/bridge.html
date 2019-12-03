@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>hybrid bridge</title>
+    <script>
+        // ifram的对象
+        var messageingIframe;
+        // 本地运行中的方法队列
+        var sendMessageQueue = [];
+        // 本地注册的方法集合,原生只能调用本地注册的方法,否则会提示错误
+        var messageHandlers = {};
+        // jsbridge协议定义的名称
+        var CUSTOM_PROTOCOL_SCHEME = 'https';
+        // OC call JS
+        var QUEUE_HAS_MESSAGE = '__wvjb_queue_message__';
+        // JS call OC
+        var QUEUE_BRIDGE_MESSAGE = '__bridge_loaded__';
+        // 定义的回调函数集合,在原生调用完对应的方法后,会执行对应的回调函数id
+        var responseCallbacks = {};
+        // 唯一id,用来确保每一个回调函数的唯一性
+        var uniqueId = 1;
+        // 当原生调用H5注册的方法时,通过回调来调用(也就是变为了异步执行,加强安全性)
+        var dispatchMessagesWithTimeoutSafety = true;
+
+
+        window.WebViewJavascriptBridge = {
+            registerHandler: registerHandler,
+            callHandler: callHandler,
+            disableJavscriptAlertBoxSafetyTimeout: disableJavscriptAlertBoxSafetyTimeout,
+            _fetchQueue: fetchQueue,
+            _handleMessageFromObjC: _handleMessageFromObjC
+        };
+
+
+        (function () {
+            messageingIframe = document.createElement('iframe');
+            messageingIframe.style.display = 'none';
+            document.documentElement.appendChild(messageingIframe);
+
+
+            registerHandler("_disableJavascriptAlertBoxSafetyTimeout", disableJavscriptAlertBoxSafetyTimeout);
+
+            // 注册Native调用H5方法
+            registerHandler("changeNameNull", function (data, callback) {
+                console.log('js调用H5-没有参数-没有回调');
+            });
+
+            registerHandler("changeNameArgument", function (data, callback) {
+                console.log('js调用H5-有参数-没有回调----', JSON.stringify(data));
+            });
+
+            registerHandler("changeName", function (data, callback) {
+                console.log('接受到的数据' + JSON.stringify(data));
+                var jsonStr = '{"name":"张三","sex":"男回调数据"}'
+                callback && callback(jsonStr)
+            });
+        })();
+
+        window.onload = function () {
+            document.getElementById('testnull').onclick = function () {
+                callHandler("reloadUrl","fileData",function(data) {
+                    console.log("回调数据"+data);
+                });
+            }
+            
+            document.getElementById('testdata').onclick = function () {
+                var jsonStr = '{"name":"张三","sex":"男回调数据filedata"}';
+                callHandler("reloadTest",jsonStr,function(data) {
+                     console.log("reloadTest回调数据"+data);
+                });
+            }
+        }
+
+        function registerHandler(hanndlerName, handler) {
+            messageHandlers[hanndlerName] = handler;
+        }
+
+        function disableJavscriptAlertBoxSafetyTimeout() {
+            dispatchMessagesWithTimeoutSafety = false;
+        }
+        // 统一处理Native调用H5的方法
+        function _handleMessageFromObjC(messageJSON) {
+            _dispatchMessageFromObjC(messageJSON);
+        }
+
+        function _dispatchMessageFromObjC(messageJSON) {
+            if (dispatchMessagesWithTimeoutSafety) {
+                setTimeout(_doDispatchMessageFromObjC(messageJSON));
+            } else {
+                _doDispatchMessageFromObjC(messageJSON);
+            }
+        }
+
+        function _doDispatchMessageFromObjC(messageJSON) {
+            var message = JSON.parse(messageJSON);
+            var messageHandler;
+            var responseCallback;
+
+            if (message.responseId) {
+                responseCallback = responseCallbacks[message.responseId];
+                if (!responseCallback) {
+                    return;
+                }
+                responseCallback(message.responseData);
+                delete responseCallbacks[message.responseId];
+            } else {
+                if (message.callbackId) {
+                    var callbackResponseId = message.callbackId;
+                    responseCallback = function (responseData) {
+                        doSend(QUEUE_HAS_MESSAGE, {
+                            handlerName: message.handlerName,
+                            responseId: callbackResponseId,
+                            responseData: responseData
+                        });
+                    };
+                }
+
+                var handler = messageHandlers[message.handlerName];
+                if (!handler) {
+                    console.log("WebViewJavascriptBridge: WARNING: no handler for message from ObjC:", message);
+                } else {
+                    handler(message.data, responseCallback);
+                }
+            }
+        }
+
+        function callHandler(handlerName, data, responseCallback) {
+            if (arguments.length == 2 && typeof data == 'function') {
+                responseCallback = data;
+                data = null;
+            }
+            doSend(QUEUE_BRIDGE_MESSAGE,{ handlerName: handlerName, data: data }, responseCallback);
+        }
+
+        function fetchQueue() {
+            var messageQueueString = JSON.stringify(sendMessageQueue);
+            sendMessageQueue = [];
+            return messageQueueString;
+        }
+
+        function doSend(QUEUEMESSAGE,message, responseCallback) {
+            if (responseCallback) {
+                var callbackId = 'cb_' + (uniqueId++) + '_' + new Date().getTime();
+                responseCallbacks[callbackId] = responseCallback;
+                message['callbackId'] = callbackId;
+            }
+            sendMessageQueue.push(message);
+
+            messageingIframe.src = CUSTOM_PROTOCOL_SCHEME + '://' + QUEUEMESSAGE + '?responseId=' + message.responseId + '&responseData=' + message.responseData;
+        }
+
+    </script>
+</head>
+
+<body>
+
+    <div id="testnull">js Call OC 无回调 - 无参数</div>
+    </p>
+    <div id="testdata">js Call OC 有参数 - 无回调</div>
+    </p>
+    <div id="testparams">js Call OC 有参数 - 有回调</div>
+    </p>
+    </p>
+
+
+</body>
+
+</html>

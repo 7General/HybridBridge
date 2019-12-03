@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>hybrid bridge</title>
+    <script>
+        var msgBody = {};
+
+        var msgCallbackMap = {};
+        var eventCallMap = {};
+
+        window.onload = function () {
+            // js call oc 无回调
+            document.getElementById('test').onclick = function () {
+                msgBody.handler = 'common';
+                msgBody.action = 'nativeLog';
+                msgBody.params = '{\'result\':\'result\'}';
+                sendMessage(msgBody);
+            }
+
+            // js call oc 有回调
+            document.getElementById('testparams').onclick = function () {
+                msgBody.handler = 'common';
+                msgBody.action = 'nativeParams';
+                msgBody.params = '{\'result\':\'result\'}';
+
+                sendMessage(msgBody, function (result) {
+                    alert('回调被触发');
+                    console.log(result["city"]);
+                });
+            }
+
+            this.onListenEvent('ocWakeJS', function (result) {
+                console.log('oc call js->CITY:' + result['CITY']);
+                alert('oc call js 没有回调函数');
+            });
+
+            this.onListenEvent('ocwakejsparams', function (result,callback) {
+                console.log('oc call js->CITY:' + result['CITY']);
+                alert('oc call js 有回调函数');
+               callback && callback('测试回传输数');
+            });
+        }
+
+        function callbackDispatcher(callbackId, resultjson) {
+            var handler = this.msgCallbackMap[callbackId];
+            if (handler) {
+                console.log(resultjson);
+                var resultObj = resultjson ? JSON.parse(resultjson) : {};
+                handler(resultObj);
+            }
+        }
+
+
+        function onListenEvent(eventId, handler) {
+            console.log('onListenEvent');
+            var handlerArr = this.eventCallMap[eventId];
+            if (handlerArr === undefined) {
+                handlerArr = [];
+                this.eventCallMap[eventId] = handlerArr;
+            }
+            if (handler !== undefined) {
+                handlerArr.push(handler);
+            }
+        }
+
+        function eventDispatcher(eventId, resultjson) {
+            console.log('eventDispatcher');
+            var handlerArr = this.eventCallMap[eventId];
+            for (var key in handlerArr) {
+                if (handlerArr.hasOwnProperty(key)) {
+                    var handler = handlerArr[key];
+                    if (handler) {
+                        var resultObj = resultjson ? JSON.parse(resultjson) : {};
+                        handler(resultObj);
+                    }
+                }
+            }
+        }
+
+        function sendMessage(data, callback) {
+            if (callback) {
+                var callbackid = this.getNextCallbackID();
+                this.msgCallbackMap[callbackid] = callback;
+                data.callbackId = callbackid;
+                data.callbackFunction = 'window.callbackDispatcher';
+            }
+            try {
+                window.webkit.messageHandlers.WKJSBridge.postMessage(data);
+            } catch (error) {
+                console.log('error native message');
+            }
+        }
+        function getNextCallbackID() {
+            return new Date().getTime();
+        }
+
+
+
+
+    </script>
+</head>
+
+<body>
+
+    <div id="test">js Call OC 无回调</div>
+    </p>
+    <div id="testparams">js Call OC 有回调</div>
+    </p>
+    </p>
+    </p>
+
+
+</body>
+
+</html>
