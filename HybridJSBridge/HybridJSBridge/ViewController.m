@@ -10,6 +10,10 @@
 #import <WebKit/WebKit.h>
 #import "WKWebViewJavascriptBridge.h"
 
+
+
+typedef void (^WWJBResponseCallback)(id responseData);
+typedef void (^WWJBHandler)(id data, WWJBResponseCallback responseCallback);
 @interface ViewController ()<WKNavigationDelegate,WKUIDelegate>
 
 @property (nonatomic, strong)WKWebView  * webView;
@@ -90,6 +94,33 @@
         NSLog(@"------------WVJBResponseCallback：%@---WVJBResponseCallback",data);
         responseCallback(@"reloadTest:发送你回调数据responsCallBack");
     }];
+    
+    
+    [self.bridge registerHandler:@"reloadTesttest" handler:^(id  _Nonnull data, WVJBResponseCallback  _Nonnull responseCallback) {
+        NSLog(@"reloadTesttests------------WVJBResponseCallback：%@---WVJBResponseCallback",data);
+    }];
+    
+    
+//    WWJBResponseCallback wwResponseCallBack = ^(NSString * data){
+//        NSLog(@"-----执行了wwResponseCallBack");
+//    };
+//
+//    WWJBHandler wwHandler = ^(NSString * data,WWJBResponseCallback callBacck) {
+//        NSLog(@"----:%@",data);
+//    };
+//
+//
+//    NSMutableDictionary * dict = [NSMutableDictionary dictionary];
+//    dict[@"ver"] = wwHandler;
+//
+//    WWJBHandler handler = dict[@"ver"];
+//    handler(@"123456",wwResponseCallBack);
+    
+
+    
+    
+    
+    
 }
 
 - (void)ocCallJs {

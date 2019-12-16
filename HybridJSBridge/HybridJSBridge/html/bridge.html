@@ -73,6 +73,11 @@
                      console.log("reloadTest回调数据"+data);
                 });
             }
+            
+            document.getElementById('testparams').onclick = function () {
+                var jsonStr = '{"name":"张三","sex":"男回调数据filedata"}';
+                callHandler("reloadTesttest",jsonStr,null);
+            }
         }
 
         function registerHandler(hanndlerName, handler) {
