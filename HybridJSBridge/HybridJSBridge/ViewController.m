@@ -100,6 +100,7 @@ typedef void (^WWJBHandler)(id data, WWJBResponseCallback responseCallback);
         NSLog(@"reloadTesttests------------WVJBResponseCallback：%@---WVJBResponseCallback",data);
     }];
     
+    // 1:
     
 //    WWJBResponseCallback wwResponseCallBack = ^(NSString * data){
 //        NSLog(@"-----执行了wwResponseCallBack");
