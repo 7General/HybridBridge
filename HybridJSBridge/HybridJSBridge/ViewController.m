@@ -104,7 +104,7 @@ typedef void (^WWJBHandler)(id data, WWJBResponseCallback responseCallback);
     // 2:
     // 3:
     // 4:
-<<<<<<< HEAD
+
     // 5:
     // 6:
     // 7 :
@@ -114,8 +114,7 @@ typedef void (^WWJBHandler)(id data, WWJBResponseCallback responseCallback);
     // 12:
     // 13:
     // 14:
-=======
->>>>>>> f3ec90e... ### 4
+    // 5:
     
 //    WWJBResponseCallback wwResponseCallBack = ^(NSString * data){
 //        NSLog(@"-----执行了wwResponseCallBack");
