@@ -99,25 +99,6 @@ typedef void (^WWJBHandler)(id data, WWJBResponseCallback responseCallback);
     [self.bridge registerHandler:@"reloadTesttest" handler:^(id  _Nonnull data, WVJBResponseCallback  _Nonnull responseCallback) {
         NSLog(@"reloadTesttests------------WVJBResponseCallback：%@---WVJBResponseCallback",data);
     }];
-    
-    // 1:
-    // 2:
-    // 3:
-    // 4:
-
-    // 5:
-    // 6:
-    // 7 :
-    
-    
-    // 11:
-    // 12:
-    // 13:
-    // 14:
-    // 5:
-
-    // 6:
-    // 7 :
 
     
 //    WWJBResponseCallback wwResponseCallBack = ^(NSString * data){
