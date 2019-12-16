@@ -33,6 +33,7 @@ typedef void (^WWJBHandler)(id data, WWJBResponseCallback responseCallback);
     
     // 4:
     // 5:
+    // 6
     // 设置webConfig
     self.webConfig = [[WKWebViewConfiguration alloc] init];
     // 设置偏好设置
